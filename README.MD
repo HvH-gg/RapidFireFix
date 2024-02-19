@@ -30,7 +30,7 @@ CounterStrikeSharp plugin to handle rapid fire in CS2.
   "ConfigVersion": 1, // do not change
 }
 ```
-~~~~
+
 # Credits
 - [Metamod:Source](https://www.sourcemm.net/)
 - [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp)
