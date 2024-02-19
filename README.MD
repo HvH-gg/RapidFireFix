@@ -19,7 +19,7 @@ CounterStrikeSharp plugin to handle rapid fire in CS2.
 2. Place the `addons` folder in your servers `game/csgo/` directory  
    ![extract](https://du.hurenso.hn/r/0NyFPY.png)
 3. Edit the config file to your liking  
-   3.1. Located at `addons/counterstrikesharp/configs/plugins/DiscordChat/DiscordChat.json`
+   3.1. Located at `addons/counterstrikesharp/configs/plugins/RapidFireFix/RapidFireFix.json`
 4. Restart your server
 
 # Config
@@ -30,7 +30,7 @@ CounterStrikeSharp plugin to handle rapid fire in CS2.
   "ConfigVersion": 1, // do not change
 }
 ```
-
+~~~~
 # Credits
 - [Metamod:Source](https://www.sourcemm.net/)
 - [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp)
