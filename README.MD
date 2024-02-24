@@ -1,4 +1,4 @@
-# HvH.gg rapid fire fix (1.0.0)
+# HvH.gg rapid fire fix (1.0.2)
 ![img](https://du.hurenso.hn/r/N5TTiI.png)
 
 # About
@@ -9,6 +9,9 @@ CounterStrikeSharp plugin to handle rapid fire in CS2.
 - 1 => Blocks rapid fire completely
 - 2 => Reflects damage scaled (damage * ReflectScale)
 - 3 => Reflects damage scaled, but keeps the player alive
+
+# Reload Config
+You can reload the config by using the `hvh_config_reload` command.
 
 # Dependencies
 [Metamod:Source (2.x)](https://www.sourcemm.net/downloads.php/?branch=master)  
