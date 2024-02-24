@@ -29,7 +29,7 @@ public class RapidFireFixConfig : BasePluginConfig
 public class Plugin : BasePlugin, IPluginConfig<RapidFireFixConfig>
 {
     public override string ModuleName => "HvH.gg rapid fire fix";
-    public override string ModuleVersion => "1.0.1";
+    public override string ModuleVersion => "1.0.2";
     public override string ModuleAuthor => "imi-tat0r";
     
     public RapidFireFixConfig Config { get; set; } = new();
