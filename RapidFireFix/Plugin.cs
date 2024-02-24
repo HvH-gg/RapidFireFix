@@ -1,6 +1,11 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Modules.Admin;
+using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Utils;
 
@@ -24,7 +29,7 @@ public class RapidFireFixConfig : BasePluginConfig
 public class Plugin : BasePlugin, IPluginConfig<RapidFireFixConfig>
 {
     public override string ModuleName => "HvH.gg rapid fire fix";
-    public override string ModuleVersion => "1.0.1";
+    public override string ModuleVersion => "1.0.2";
     public override string ModuleAuthor => "imi-tat0r";
     
     public RapidFireFixConfig Config { get; set; } = new();
@@ -32,8 +37,10 @@ public class Plugin : BasePlugin, IPluginConfig<RapidFireFixConfig>
     private readonly Dictionary<uint, int> _lastPlayerShotTick = new();
     private readonly HashSet<uint> _rapidFireBlockUserIds = new();
     private readonly Dictionary<uint, float> _rapidFireBlockWarnings = new();
-    
+
+    private static readonly string AssemblyName = Assembly.GetExecutingAssembly().GetName().Name ?? "";
     private static readonly string ChatPrefix = $"[{ChatColors.Red}Hv{ChatColors.DarkRed}H{ChatColors.Default}.gg]";
+    private static readonly string CfgPath = $"{Server.GameDirectory}/csgo/addons/counterstrikesharp/configs/plugins/{AssemblyName}/{AssemblyName}.json";
 
     public void OnConfigParsed(RapidFireFixConfig config)
     {
@@ -45,7 +52,7 @@ public class Plugin : BasePlugin, IPluginConfig<RapidFireFixConfig>
         base.Load(hotReload);
 
         Console.WriteLine("[HvH.gg] Start loading HvH.gg rapid fire fix plugin");
-
+        
         RegisterListener<Listeners.OnMapStart>(name =>
         {
             _lastPlayerShotTick.Clear();
@@ -88,6 +95,10 @@ public class Plugin : BasePlugin, IPluginConfig<RapidFireFixConfig>
             if (nextPrimaryAttackTick > lastShotTick)
                 return HookResult.Continue;
 
+            // no chat message if we allow rapid fire
+            if (Config.FixMethod == FixMethod.Allow)
+                return HookResult.Continue;
+            
             Console.WriteLine($"[HvH.gg] Detected rapid fire from {@event.Userid.PlayerName}");
             
             // clear list every frame (in case of misses)
@@ -107,7 +118,6 @@ public class Plugin : BasePlugin, IPluginConfig<RapidFireFixConfig>
 
             return HookResult.Continue;
         });
-        
         
         // block damage if attacker is in the list
         VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook((h) =>
@@ -143,5 +153,30 @@ public class Plugin : BasePlugin, IPluginConfig<RapidFireFixConfig>
         }, HookMode.Pre);
         
         Console.WriteLine("[HvH.gg] Finished loading HvH.gg rapid fire fix plugin");
+    }
+    
+    [ConsoleCommand("hvh_cfg_reload", "Reload the config in the current session without restarting the server")]
+    [RequiresPermissions("@css/generic")]
+    [CommandHelper(minArgs: 0, whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+    public void OnReloadConfigCommand(CCSPlayerController? player, CommandInfo info)
+    {
+        var config = File.ReadAllText(CfgPath);
+        try
+        {
+            Config = JsonSerializer.Deserialize<RapidFireFixConfig>(config, new JsonSerializerOptions() { ReadCommentHandling = JsonCommentHandling.Skip })!;
+            info.ReplyToCommand($"{(player == null ? "HvH.gg" : ChatPrefix)} Config reloaded successfully");
+        }
+        catch (Exception e)
+        {
+            info.ReplyToCommand($"{(player == null ? "HvH.gg" : ChatPrefix)} Failed to reload config: {e.Message}");
+        }
+    }
+
+    public override void Unload(bool hotReload)
+    {
+        base.Unload(hotReload);
+        _lastPlayerShotTick.Clear();
+        _rapidFireBlockUserIds.Clear();
+        _rapidFireBlockWarnings.Clear();
     }
 }
