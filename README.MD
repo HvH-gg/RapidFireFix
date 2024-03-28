@@ -37,5 +37,4 @@ You can reload the config by using the `hvh_config_reload` command.
 # Credits
 - [Metamod:Source](https://www.sourcemm.net/)
 - [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp)
-- [Discord.Net](https://github.com/discord-net/Discord.Net)
 - [MagicBulletFix](https://github.com/CS2Plugins/MagicBulletFix)
