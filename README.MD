@@ -1,4 +1,4 @@
-# HvH.gg rapid fire fix (1.0.2)
+# [HvH.gg](https://hvh.gg) rapid fire fix (1.0.2)
 ![img](https://du.hurenso.hn/r/N5TTiI.png)
 
 # About
@@ -35,6 +35,7 @@ You can reload the config by using the `hvh_config_reload` command.
 ```
 
 # Credits
+- [HvH.gg](https://hvh.gg)
 - [Metamod:Source](https://www.sourcemm.net/)
 - [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp)
 - [MagicBulletFix](https://github.com/CS2Plugins/MagicBulletFix)
