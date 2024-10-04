@@ -15,7 +15,7 @@ You can reload the config by using the `hvh_config_reload` command.
 
 # Dependencies
 [Metamod:Source (2.x)](https://www.sourcemm.net/downloads.php/?branch=master)  
-[CounterStrikeSharp(v167)](https://github.com/roflmuffin/CounterStrikeSharp/releases)
+[CounterStrikeSharp(v228)](https://github.com/roflmuffin/CounterStrikeSharp/releases)
 
 # Installation
 1. Install Metamod:Source and CounterStrikeSharp
