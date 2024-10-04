@@ -1,4 +1,4 @@
-# [HvH.gg](https://hvh.gg) rapid fire fix (1.0.2)
+# [HvH.gg](https://hvh.gg) rapid fire fix (1.0.3)
 ![img](https://du.hurenso.hn/r/N5TTiI.png)
 
 # About

@@ -29,7 +29,7 @@ public class RapidFireFixConfig : BasePluginConfig
 public class Plugin : BasePlugin, IPluginConfig<RapidFireFixConfig>
 {
     public override string ModuleName => "HvH.gg rapid fire fix";
-    public override string ModuleVersion => "1.0.2";
+    public override string ModuleVersion => "1.0.3";
     public override string ModuleAuthor => "imi-tat0r";
     
     public RapidFireFixConfig Config { get; set; } = new();
@@ -79,8 +79,10 @@ public class Plugin : BasePlugin, IPluginConfig<RapidFireFixConfig>
         {
             if (@event.Userid is not { IsValid: true, IsHLTV: false, IsBot: false, UserId: not null, SteamID: >0 })
                 return HookResult.Continue;
-            
-            var nextPrimaryAttackTick = @event.Userid.Pawn.Value?.WeaponServices?.ActiveWeapon.Value?.NextPrimaryAttackTick ?? 0;
+
+            var firedWeapon = @event.Userid!.Pawn.Value?.WeaponServices?.ActiveWeapon.Value;
+            var weaponData = firedWeapon?.GetVData<CCSWeaponBaseVData>();
+        
             var index = @event.Userid.Pawn.Index;
             
             if (!_lastPlayerShotTick.TryGetValue(index, out var lastShotTick))
@@ -90,10 +92,14 @@ public class Plugin : BasePlugin, IPluginConfig<RapidFireFixConfig>
             }
             
             _lastPlayerShotTick[index] = Server.TickCount;
+        
+            var shotTickDiff = Server.TickCount - lastShotTick;
+            var possibleAttackDiff = (weaponData?.CycleTime.Values[0] * 64 ?? 0) - 1;
 
             // this is ghetto but should work for now
-            if (nextPrimaryAttackTick > lastShotTick)
-                return HookResult.Continue;
+            if (shotTickDiff > possibleAttackDiff || 
+                firedWeapon?.DesignerName == "weapon_revolver")
+                return HookResult.Continue; 
 
             // no chat message if we allow rapid fire
             if (Config.FixMethod == FixMethod.Allow)
