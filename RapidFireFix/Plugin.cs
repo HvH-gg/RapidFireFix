@@ -14,9 +14,12 @@ namespace RapidFireFix;
 public enum FixMethod
 {
     Allow = 0,
+    // delays the next attack so the rapid fire shot is never fired
     Ignore,
     Reflect,
-    ReflectSafe
+    ReflectSafe,
+    // lets the rapid fire shot through but removes its damage
+    PreventDamage
 }
 
 public class RapidFireFixConfig : BasePluginConfig
@@ -32,7 +35,7 @@ public class RapidFireFixConfig : BasePluginConfig
 public class Plugin : BasePlugin, IPluginConfig<RapidFireFixConfig>
 {
     public override string ModuleName => "HvH.gg rapid fire fix";
-    public override string ModuleVersion => "1.0.5";
+    public override string ModuleVersion => "1.1.0";
     public override string ModuleAuthor => "imi-tat0r";
     
     public RapidFireFixConfig Config { get; set; } = new();
@@ -87,6 +90,9 @@ public class Plugin : BasePlugin, IPluginConfig<RapidFireFixConfig>
             if (!@event.Userid.IsPlayer())
                 return HookResult.Continue;
 
+            if (Config.FixMethod == FixMethod.Ignore)
+                DelayNextAttack(@event.Userid!);
+
             var firedWeapon = @event.Userid!.Pawn.Value?.WeaponServices?.ActiveWeapon.Value;
             var weaponData = firedWeapon?.GetVData<CCSWeaponBaseVData>();
         
@@ -138,9 +144,23 @@ public class Plugin : BasePlugin, IPluginConfig<RapidFireFixConfig>
             return HookResult.Continue;
         });
         
+        RegisterEventHandler<EventBulletImpact>((@event, _) =>
+        {
+            if (Config.FixMethod != FixMethod.Ignore || !@event.Userid.IsPlayer())
+                return HookResult.Continue;
+
+            DelayNextAttack(@event.Userid!);
+
+            return HookResult.Continue;
+        }, HookMode.Pre);
+        
         // block damage if attacker is in the list
         VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook((h) =>
         {
+            // the ignore method blocks the shot itself, damage stays untouched
+            if (Config.FixMethod == FixMethod.Ignore)
+                return HookResult.Continue;
+
             var damageInfo = h.GetParam<CTakeDamageInfo>(1);
 
             // attacker is invalid
@@ -156,7 +176,7 @@ public class Plugin : BasePlugin, IPluginConfig<RapidFireFixConfig>
             {
                 case FixMethod.Allow:
                     break;
-                case FixMethod.Ignore:
+                case FixMethod.PreventDamage:
                     damageInfo.Damage = 0;
                     break;
                 case FixMethod.Reflect:
@@ -196,6 +216,29 @@ public class Plugin : BasePlugin, IPluginConfig<RapidFireFixConfig>
         _lastPlayerShotTick.Clear();
         _rapidFireBlockUserIds.Clear();
         _rapidFireBlockWarnings.Clear();
+    }
+    
+    // pushes the next primary attack out by the weapon's cycle time so a shifted second shot is never fired
+    private void DelayNextAttack(CCSPlayerController player)
+    {
+        var firedWeapon = player.Pawn.Value?.WeaponServices?.ActiveWeapon.Value;
+
+        if (firedWeapon == null || firedWeapon.DesignerName == "weapon_revolver" || !IsWeaponRestricted(firedWeapon.DesignerName))
+            return;
+
+        var weaponData = firedWeapon.GetVData<CCSWeaponBaseVData>();
+
+        if (weaponData == null)
+            return;
+
+        var cycleTicks = (int)Math.Round(weaponData.CycleTime.Values[0] * 64) - 3;
+        var nextAttackTick = (int)player.TickBase + cycleTicks;
+
+        if (firedWeapon.NextPrimaryAttackTick >= nextAttackTick)
+            return;
+
+        firedWeapon.NextPrimaryAttackTick = nextAttackTick;
+        Utilities.SetStateChanged(firedWeapon, "CBasePlayerWeapon", "m_nNextPrimaryAttackTick");
     }
     
     private bool IsWeaponRestricted(string weaponName)
