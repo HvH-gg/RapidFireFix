@@ -51,6 +51,16 @@ jobs:
       - name: Build
         run: dotnet build -c Release --no-restore /p:Version=${{ env.VERSION_NUMBER }}
 
+      - name: Copy CSSharpUtils.dll
+        run: |
+          mkdir -p release/addons/counterstrikesharp/plugins/RapidFireFix
+          CSSharpUtilsDllPath=$(find ~/.nuget/packages/cssharputils/ -name "CSSharpUtils.dll" | head -n 1)
+          if [ -z "$CSSharpUtilsDllPath" ]; then
+            echo "CSSharpUtils.dll not found. Exiting."
+            exit 1
+          fi
+          cp "$CSSharpUtilsDllPath" release/addons/counterstrikesharp/plugins/RapidFireFix/
+
       - name: Check contents of bin/Release directory
         run: |
           echo "Listing contents of RapidFireFix/bin/Release/net8.0/"
